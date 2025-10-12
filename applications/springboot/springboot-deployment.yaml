@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: airoad
+  namespace: airoad
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: airoad
+  template:
+    metadata:
+      labels:
+        app: airoad
+    spec:
+      imagePullSecrets:
+        - name: ghcr-secret
+      containers:
+      - name: airoad
+        image: ghcr.io/swyp-web-11-team-4/airoad-backend:0.1.1
+        ports:
+        - containerPort: 8080
+        env:
+        - name: JAVA_TOOL_OPTIONS
+          value: "-Xmx1500m -Xms512m"
+        - name: SPRING_PROFILES_ACTIVE
+          value: "dev"
+        envFrom:
+          - secretRef:
+              name: springboot-secret
+        resources:
+          requests:
+            memory: "1Gi"
+            cpu: "500m"
+          limits:
+            memory: "2Gi"
+        livenessProbe:
+          httpGet:
+            path: /actuator/health
+            port: 8080
+          initialDelaySeconds: 60
+          periodSeconds: 30
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /actuator/health
+            port: 8080
+          initialDelaySeconds: 40
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+      initContainers:
+      - name: wait-for-mysql
+        image: busybox:latest
+        command: ['sh', '-c', 'until nc -z mysql 3306; do echo waiting for mysql; sleep 5; done;']
+      - name: wait-for-redis
+        image: busybox:latest
+        command: ['sh', '-c', 'until nc -z redis 6379; do echo waiting for redis; sleep 5; done;']

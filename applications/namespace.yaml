@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: airoad
+  labels:
+    name: airoad
+    app.kubernetes.io/name: airoad
