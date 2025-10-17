@@ -32,6 +32,9 @@ spec:
       containers:
         - name: postgresql-master
           image: postgis/postgis:16-3.4
+          securityContext:
+            runAsUser: 999
+            runAsGroup: 999
           env:
             - name: POSTGRES_PASSWORD
               valueFrom:
