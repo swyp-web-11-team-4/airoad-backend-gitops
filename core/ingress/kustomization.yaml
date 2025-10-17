@@ -3,4 +3,4 @@ kind: Kustomization
 
 resources:
   - airoad-ingress.yaml
-  - mysql-ingress.yaml
+  - postgresql-ingress.yaml
