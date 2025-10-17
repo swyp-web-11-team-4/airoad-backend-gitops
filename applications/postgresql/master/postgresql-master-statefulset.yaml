@@ -1,0 +1,108 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgresql-master
+  namespace: airoad
+spec:
+  serviceName: postgresql-master-headless
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgresql-master
+  template:
+    metadata:
+      labels:
+        app: postgresql-master
+        role: master
+    spec:
+      securityContext:
+        fsGroup: 999
+      initContainers:
+        - name: init-permissions
+          image: busybox:1.36
+          command:
+            - sh
+            - -c
+            - |
+              chown -R 999:999 /var/lib/postgresql/data
+              chmod 700 /var/lib/postgresql/data
+          volumeMounts:
+            - name: postgresql-master-storage
+              mountPath: /var/lib/postgresql/data
+      containers:
+        - name: postgresql-master
+          image: postgis/postgis:16-3.4
+          env:
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgresql-secret
+                  key: POSTGRES_PASSWORD
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: postgresql-secret
+                  key: POSTGRES_USER
+            - name: POSTGRES_DB
+              valueFrom:
+                secretKeyRef:
+                  name: postgresql-secret
+                  key: POSTGRES_DB
+            - name: PGDATA
+              value: /var/lib/postgresql/data/pgdata
+          ports:
+            - containerPort: 5432
+              name: postgresql
+          volumeMounts:
+            - name: postgresql-master-storage
+              mountPath: /var/lib/postgresql/data
+            - name: postgresql-master-config
+              mountPath: /etc/postgresql/postgresql.conf
+              subPath: postgresql.conf
+            - name: postgresql-master-config
+              mountPath: /etc/postgresql/pg_hba.conf
+              subPath: pg_hba.conf
+          command:
+            - postgres
+            - -c
+            - config_file=/etc/postgresql/postgresql.conf
+            - -c
+            - hba_file=/etc/postgresql/pg_hba.conf
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "250m"
+            limits:
+              memory: "1Gi"
+              cpu: "500m"
+          livenessProbe:
+            exec:
+              command:
+                - pg_isready
+                - -U
+                - postgres
+            initialDelaySeconds: 30
+            timeoutSeconds: 5
+            periodSeconds: 10
+          readinessProbe:
+            exec:
+              command:
+                - pg_isready
+                - -U
+                - postgres
+            initialDelaySeconds: 10
+            timeoutSeconds: 1
+            periodSeconds: 5
+      volumes:
+        - name: postgresql-master-config
+          configMap:
+            name: postgresql-master-config
+  volumeClaimTemplates:
+    - metadata:
+        name: postgresql-master-storage
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        storageClassName: longhorn
+        resources:
+          requests:
+            storage: 1Gi

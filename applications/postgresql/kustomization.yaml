@@ -4,7 +4,4 @@ kind: Kustomization
 namespace: airoad
 
 resources:
-  - namespace.yaml
-  - postgresql
-  - redis
-  - springboot
+  - master

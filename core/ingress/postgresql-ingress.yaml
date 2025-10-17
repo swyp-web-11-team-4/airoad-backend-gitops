@@ -1,0 +1,11 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: postgresql-tcp
+  namespace: airoad
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/tcp-services-configmap: ingress-nginx/tcp-services
+spec:
+  rules:
+  - host: db.luigi99.cloud
