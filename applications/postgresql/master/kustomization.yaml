@@ -4,6 +4,5 @@ kind: Kustomization
 namespace: airoad
 
 resources:
-  - postgresql-master-config.yaml
   - postgresql-master-statefulset.yaml
   - postgresql-master-service.yaml
