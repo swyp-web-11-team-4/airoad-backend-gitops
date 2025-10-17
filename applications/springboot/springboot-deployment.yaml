@@ -51,9 +51,9 @@ spec:
           timeoutSeconds: 5
           failureThreshold: 3
       initContainers:
-      - name: wait-for-mysql
+      - name: wait-for-db
         image: busybox:latest
-        command: ['sh', '-c', 'until nc -z mysql 3306; do echo waiting for mysql; sleep 5; done;']
+        command: ['sh', '-c', 'until nc -z postgresql 5432; do echo waiting for postgresql; sleep 5; done;']
       - name: wait-for-redis
         image: busybox:latest
         command: ['sh', '-c', 'until nc -z redis 6379; do echo waiting for redis; sleep 5; done;']
