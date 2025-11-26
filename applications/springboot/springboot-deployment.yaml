@@ -17,7 +17,7 @@ spec:
         - name: ghcr-secret
       containers:
       - name: airoad
-        image: ghcr.io/swyp-web-11-team-4/airoad-backend:0.34.1
+        image: ghcr.io/swyp-web-11-team-4/airoad-backend:0.35.0
         ports:
         - containerPort: 8080
         env:
